@@ -109,6 +109,13 @@ func (this *ConnPool) overMaxIdle() bool {
 	return len(this.free) >= this.MaxIdle
 }
 
+func (this *ConnPool) ForceClose(conn io.Closer) {
+	this.decreActive()
+	if conn != nil {
+		conn.Close()
+	}
+}
+
 func (this *ConnPool) Release(conn io.Closer) {
 	if this.overMaxIdle() {
 		this.decreActive()
