@@ -22,6 +22,8 @@ type ConnPool struct {
 	MaxConns int
 	MaxIdle  int
 
+	TestOnBorrow bool
+
 	active int
 	free   []io.Closer
 }
@@ -69,11 +71,13 @@ func (this *ConnPool) decreActive() {
 func (this *ConnPool) Get() (conn io.Closer, err error) {
 	conn = this.tryFree()
 	if conn != nil {
-		err = this.Ping(conn)
-		if err != nil {
-			conn.Close()
-			conn = this.tryFree()
-			err = nil
+		if this.TestOnBorrow {
+			err = this.Ping(conn)
+			if err != nil {
+				conn.Close()
+				conn = this.tryFree()
+				err = nil
+			}
 		}
 		return
 	}
@@ -87,10 +91,12 @@ func (this *ConnPool) Get() (conn io.Closer, err error) {
 		return
 	}
 
-	err = this.Ping(conn)
-	if err != nil {
-		conn.Close()
-		return nil, err
+	if this.TestOnBorrow {
+		err = this.Ping(conn)
+		if err != nil {
+			conn.Close()
+			return nil, err
+		}
 	}
 
 	this.increActive()
