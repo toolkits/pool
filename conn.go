@@ -79,7 +79,10 @@ func (this *ConnPool) Get() (conn io.Closer, err error) {
 				err = nil
 			}
 		}
-		return
+
+		if conn != nil {
+			return
+		}
 	}
 
 	if this.reachedMax() {
