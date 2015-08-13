@@ -23,17 +23,17 @@ type ConnPool struct {
 
 	Name     string
 	Address  string
-	MaxConns int
-	MaxIdle  int
+	MaxConns int32
+	MaxIdle  int32
 	Cnt      int64
 	New      func(name string) (NConn, error)
 
-	active int
+	active int32
 	free   []NConn
 	all    map[string]NConn
 }
 
-func NewConnPool(name string, address string, maxConns int, maxIdle int) *ConnPool {
+func NewConnPool(name string, address string, maxConns int32, maxIdle int32) *ConnPool {
 	return &ConnPool{Name: name, Address: address, MaxConns: maxConns, MaxIdle: maxIdle, Cnt: 0, all: make(map[string]NConn)}
 }
 
@@ -160,5 +160,5 @@ func (this *ConnPool) overMax() bool {
 }
 
 func (this *ConnPool) overMaxIdle() bool {
-	return len(this.free) >= this.MaxIdle
+	return int32(len(this.free)) >= this.MaxIdle
 }
